@@ -1,6 +1,6 @@
-# Sade düzen
+# sadedev
 
-Claude Code ile proje geliştirirken DevFlow'un yerine geçen hafif çalışma düzeni. Dört parçası var ve hiçbiri model
+Sade geliştirme düzeni: Claude Code ile proje geliştirirken ağır süreç araçlarının (bizde DevFlow) yerine geçen hafif çalışma düzeni. Dört parçası var ve hiçbiri model
 çağırmaz, yani kendisi token harcamaz:
 
 1. **İş düzeni** — her projede tek bir `YAPILACAKLAR.md` ve kısa bir `CLAUDE.md`.
@@ -126,7 +126,7 @@ Her proje için tek kart: **yol haritası** (`docs/YOL-HARITASI.md`), **Şimdi**
 
 Gereken: Node.js 20+, git, Docker (konteyner kayıtları için), systemd kullanıcı oturumu. Sudo gerekmez.
 
-1. Depoyu `~/projects/sade-duzen`'e koy (zamanlayıcılar bu yolu kullanır).
+1. Depoyu `~/projects/sadedev`'e koy (zamanlayıcılar bu yolu kullanır).
 2. `projeler.json`'u düzenle.
 3. Zamanlayıcıları kur: `systemd/kur.sh` (kaldırmak: `systemd/kur.sh --kaldir`).
 4. Elle bir kez dene: `node hafiza/calistir.js` ve `token/gunluk-rapor.sh --bildirimsiz && node pano/olustur.js`.

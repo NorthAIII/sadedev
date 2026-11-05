@@ -2,7 +2,7 @@
 Type=Application
 Name=Çalışma Panosu
 Comment=Projelerin yol haritası, işleri ve token raporu (yeniler ve açar)
-Exec=/bin/bash -c "$HOME/projects/sade-duzen/pano/ac.sh"
+Exec=/bin/bash -c "$HOME/projects/sadedev/pano/ac.sh"
 Icon=view-list-symbolic
 Terminal=false
 Categories=Utility;

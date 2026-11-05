@@ -3,5 +3,5 @@ Description=Sade düzen: kısa süreli hafıza (model çağırmaz)
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/node %h/projects/sade-duzen/hafiza/calistir.js
-ExecStartPost=/usr/bin/node %h/projects/sade-duzen/pano/olustur.js
+ExecStart=/usr/bin/node %h/projects/sadedev/hafiza/calistir.js
+ExecStartPost=/usr/bin/node %h/projects/sadedev/pano/olustur.js

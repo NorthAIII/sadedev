@@ -3,4 +3,4 @@ Description=Sade düzen: haftalık uzun süreli hafıza dizini (model çağırma
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/node %h/projects/sade-duzen/hafiza/calistir.js --hafta
+ExecStart=/usr/bin/node %h/projects/sadedev/hafiza/calistir.js --hafta
