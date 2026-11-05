@@ -12,6 +12,12 @@ const md = (s) => kac(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*(
 const raporDir = path.join(os.homedir(), 'token-rapor');
 const raporlar = fs.existsSync(raporDir) ? fs.readdirSync(raporDir).filter((f) => /^\d{4}-\d{2}-\d{2}\.txt$/.test(f)).sort() : [];
 const rapor = raporlar.length ? fs.readFileSync(path.join(raporDir, raporlar.at(-1)), 'utf8') : '';
+// Son 24 saatin canlı alarmları (token/canli-alarm.sh yazar: "YYYY-MM-DD HH:MM  metin", TR saati); yalnız bu sayfada, pano.json'a girmez
+const alarmDosya = path.join(raporDir, 'canli-alarm.log');
+const alarmlar = (fs.existsSync(alarmDosya) ? fs.readFileSync(alarmDosya, 'utf8').split('\n') : [])
+  .map((l) => l.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})  (.*)/)).filter(Boolean)
+  .filter((m) => Date.now() - Date.parse(`${m[1]}T${m[2]}:00+03:00`) < 864e5)
+  .map((m) => `${m[2]} · ${m[3]}`).reverse();
 
 function isListesi(dosya) {
   if (!fs.existsSync(dosya)) return null;
@@ -96,7 +102,8 @@ dt{color:var(--soluk)}dd{margin:0;overflow-wrap:anywhere}h3{font-size:14px;margi
 ul{margin:0;padding-left:18px}a{color:var(--vurgu);font-size:12px;font-weight:normal;margin-left:6px}li{margin:2px 0;overflow-wrap:anywhere}code{font-size:12px}.soluk{color:var(--soluk)}
 details{margin-top:20px}pre{background:var(--kart);border:1px solid var(--cizgi);border-radius:8px;padding:12px;overflow-x:auto;font-size:12px}
 </style></head><body>
-<div class="ust"><div><h1>Çalışma Panosu</h1><div class="ozet">${kac(ozet)}</div>${uyari ? `<div class="uyari">${kac(uyari)}</div>` : ''}</div>
+<div class="ust"><div><h1>Çalışma Panosu</h1><div class="ozet">${kac(ozet)}</div>${uyari ? `<div class="uyari">${kac(uyari)}</div>` : ''}
+${alarmlar.length ? `<h3 class="uyari">Canlı alarmlar, son 24 saat <span class="sayi">${alarmlar.length}</span>${bag(alarmDosya, 'kayıt')}</h3><ul>${alarmlar.slice(0, 10).map((x) => `<li>${kac(x)}</li>`).join('')}${alarmlar.length > 10 ? `<li class="soluk">… +${alarmlar.length - 10}</li>` : ''}</ul>` : '<div class="soluk">Son 24 saatte canlı alarm yok</div>'}</div>
 <div class="soluk">Güncellendi: ${new Date(Date.now() + 3 * 36e5).toISOString().slice(0, 16).replace('T', ' ')}</div></div>
 <main>${kart}</main>
 <details><summary>Token raporunun tamamı</summary><pre>${kac(rapor || '-')}</pre></details>
