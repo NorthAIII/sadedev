@@ -1,6 +1,6 @@
 # sadedev
 
-Sade geliştirme düzeni: Claude Code ile proje geliştirirken ağır süreç araçlarının (bizde DevFlow) yerine geçen hafif çalışma düzeni. Dört parçası var ve hiçbiri model
+Sade geliştirme düzeni: Claude Code ile proje geliştirirken ağır süreç araçlarının (bizde DevFlow) yerine geçen hafif çalışma düzeni. Dört parçası (ve bir izleme betiği) var ve hiçbiri model
 çağırmaz, yani kendisi token harcamaz:
 
 1. **İş düzeni** — her projede tek bir `YAPILACAKLAR.md` ve kısa bir `CLAUDE.md`.
@@ -120,6 +120,20 @@ Her proje için tek kart: **yol haritası** (`docs/YOL-HARITASI.md`), **Şimdi**
 - Projeler `projeler.json`'da: `ad`, `yol`, varsa `konteyner` (VS Code konteynerindeki klasör adı) ve iş listesi dosyası.
 - Aynı veri `~/pano/pano.json` olarak da yazılır; `~/.gizli/bunker-pano.env` (BUNKER_PANO_URL, BUNKER_PANO_TOKEN) varsa `pano/gonder.sh` bunu Bunker OS'un Ops sayfasına gönderir (yoksa hiçbir şey yapmaz).
 - Yol haritası tablo (`| Ne | Neden | Hedef tarih | Durum |`) ya da madde listesi olabilir; panoda ilk 6 satır görünür.
+
+---
+
+## 5. İzleme
+
+`node izle/izle.js`: "Şimdi"si olan her proje için tek satır (son 24 saatin commit'i ve son commit, "Şimdi"deki iş ve kaç saattir
+değişmediği, "Bitti"ye bugün inen, commit edilmemiş dosya, dünkü token ve 7 günlük ortalama, son 7 günün en uzun oturumu, CI).
+Model çağırmaz; uyarı varsa çıkış kodu 1. Uyarılar:
+
+- `_dev/` ya da `.claude/commands/devflow` yeniden oluştu; `.claude/settings.json`'da `kayit-kapisi` var;
+- çalışma dalının son tamamlanmış CI koşusu kırmızı (`gh run list`);
+- son 24 saatte biten, 12 saati aşan oturum (süre ilk ve son mesaj arası; boş bekleme dahil, yanında tokeni);
+- dünkü token 7 günlük ortalamanın iki katı (0,1 milyarın altı sayılmaz);
+- "Şimdi" 24 saattir değişmedi; 300'den fazla commit edilmemiş dosya.
 
 ---
 
