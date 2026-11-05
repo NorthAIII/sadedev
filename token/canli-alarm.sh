@@ -18,8 +18,12 @@ for d in "$HOME"/.claude/projects/*/ "$HOME"/.claude-konteyner/*/projects/*/; do
   topla "$(basename "$d")" node "$BURA/canli-topla.js" "$d" 6
 done
 
+# ~/.claude'ı ana makineden bağlı konteyner (~/.claude-konteyner/<ad>) yukarıda zaten okundu; ikinci kez sayılmasın
+bagli() { docker inspect -f '{{range .Mounts}}{{.Destination}} {{end}}' "$1" 2>/dev/null | grep -qE '/\.claude( |$)'; }
+
 # VS Code'un açtığı geliştirme konteynerleri (imaj adı vsc- ile başlar); betik stdin'den verilir
 for c in $(docker ps --format '{{.Names}} {{.Image}}' 2>/dev/null | awk '$2 ~ /^vsc-/ {print $1}'); do
+  bagli "$c" && continue
   for d in $(docker exec "$c" sh -c 'ls -d /home/*/.claude/projects/*/ 2>/dev/null'); do
     topla "$(basename "$d")" docker exec -i "$c" node - "$d" 6 < "$BURA/canli-topla.js"
   done

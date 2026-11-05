@@ -118,6 +118,7 @@ Son 6 saatin kayıtlarını okur, model çağırmaz. Yeni alarm masaüstüne kal
 
 Eşikler 22 Ekim – 5 Kasım ölçümünden (`token/olcum/OKUBENI.md` → Canlı alarm). Elle: `token/canli-alarm.sh --bildirimsiz`.
 Geçmişte çalışsaydı ne derdi: `canli-topla.js`'i 340 saatle topla, `canli-alarm.js --benzet <baş> <bitiş>`.
+**Geçmiş:** her sabah aynı veriden `~/token-rapor/gecmis.json` (gün × proje, `token/gecmis.js`) güncellenir; aynı gün ve projede büyük olan kalır, böylece Claude'un 30 günden eski kayıtları silmesi ya da konteynerin yeniden kurulması geçmişi götürmez. Panoda ve Bunker'da son 5 ay (`token.gecmis`). Başlangıç 6 Kasım'da ana makine, konteynerler, 3 Ekim konteyner arşivi ve 5 Kasım ölçümünden kuruldu: 11 Eylül'den önce ve Alpfit'te 4–21 Ekim boş (o kayıtlar silinmişti). Model çağırmaz.
 Ayrıntılı ölçüm betikleri `token/olcum/` (oturum başına, çağrı başına bağlam, efor kırılımı; `token/olcum/OKUBENI.md`).
 
 ---

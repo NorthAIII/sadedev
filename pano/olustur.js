@@ -86,6 +86,17 @@ const kart = ayar.projeler.map((p) => {
   <dt>Dün token</dt><dd>${tok ? `${kac(tok[1])} milyar · 7 gün ort. ${kac(tok[2])}${tok[3] ? ` · ${kac(tok[3])}` : ''}` : '-'}</dd></dl>${govde}</section>`;
 }).join('\n');
 
+// Günlük token geçmişi (token/gecmis.js yazar): son 155 gün, milyar; proje adları projeler.json'dakiler
+const gecmisDosya = path.join(raporDir, 'gecmis.json');
+let gecmisHam = {}; try { gecmisHam = JSON.parse(fs.readFileSync(gecmisDosya, 'utf8')); } catch {}
+const kisaAd = Object.fromEntries(ayar.projeler.map((p) => [path.relative(path.join(os.homedir(), 'projects'), genislet(p.yol)).replace(/[^A-Za-z0-9]/g, '-'), p.ad]));
+const mr3 = (n) => Math.round(n / 1e6) / 1e3;
+const gecmis = Object.keys(gecmisHam).sort().filter((g) => Date.now() - Date.parse(g) < 155 * 864e5).map((g) => {
+  const pr = {};
+  for (const [k, t] of Object.entries(gecmisHam[g])) pr[kisaAd[k] || k] = (pr[kisaAd[k] || k] || 0) + t;
+  const en = Object.entries(pr).sort((a, b) => b[1] - a[1]).slice(0, 40);
+  return { gun: g, toplam: mr3(Object.values(pr).reduce((a, b) => a + b, 0)), projeler: Object.fromEntries(en.map(([k, t]) => [k, mr3(t)])) };
+});
 const ozet = rapor.split('\n')[0] || 'Token raporu henüz yok';
 const uyari = (rapor.split('Uyarılar:')[1] || '').trim();
 const html = `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -111,6 +122,6 @@ ${alarmlar.length ? `<h3 class="uyari">Canlı alarmlar, son 24 saat <span class=
 </body></html>`;
 const cikti = path.join(os.homedir(), 'pano'); fs.mkdirSync(cikti, { recursive: true });
 fs.writeFileSync(path.join(cikti, 'index.html'), html);
-veri.token = { ozet, uyarilar: [...alarmlar.map((x) => `Canlı alarm ${x}`), ...(uyari ? uyari.split('\n').map((x) => x.replace(/^⚠ /, '')) : [])], rapor };
+veri.token = { ozet, gecmis, uyarilar: [...alarmlar.map((x) => `Canlı alarm ${x}`), ...(uyari ? uyari.split('\n').map((x) => x.replace(/^⚠ /, '')) : [])], rapor };
 fs.writeFileSync(path.join(cikti, 'pano.json'), JSON.stringify(veri, null, 1));
 console.log(path.join(cikti, 'index.html'));

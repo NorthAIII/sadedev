@@ -17,8 +17,12 @@ for d in "$HOME"/.claude/projects/*/ "$HOME"/.claude-konteyner/*/projects/*/; do
   topla "$(basename "$d")" node "$BURA/gunluk-topla.js" "$d" 9
 done
 
+# ~/.claude'ı ana makineden bağlı konteyner (~/.claude-konteyner/<ad>) yukarıda zaten okundu; ikinci kez sayılmasın
+bagli() { docker inspect -f '{{range .Mounts}}{{.Destination}} {{end}}' "$1" 2>/dev/null | grep -qE '/\.claude( |$)'; }
+
 # VS Code'un açtığı geliştirme konteynerleri (imaj adı vsc- ile başlar); betik stdin'den verilir
 for c in $(docker ps --format '{{.Names}} {{.Image}}' 2>/dev/null | awk '$2 ~ /^vsc-/ {print $1}'); do
+  bagli "$c" && continue
   for d in $(docker exec "$c" sh -c 'ls -d /home/*/.claude/projects/*/ 2>/dev/null'); do
     topla "$(basename "$d")" docker exec -i "$c" node - "$d" 9 < "$BURA/gunluk-topla.js"
   done
@@ -29,6 +33,7 @@ SINIR=$(date -d '9 days ago' +%s)
 for c in $(docker ps -a --filter status=exited --format '{{.Names}} {{.Image}}' 2>/dev/null | awk '$2 ~ /^vsc-/ {print $1}'); do
   bitis=$(date -d "$(docker inspect -f '{{.State.FinishedAt}}' "$c")" +%s 2>/dev/null || echo 0)
   [ "$bitis" -ge "$SINIR" ] || continue
+  bagli "$c" && continue
   for k in node vscode; do
     GD="$(mktemp -d)"
     if docker cp "$c:/home/$k/.claude/projects" "$GD/" >/dev/null 2>&1; then
@@ -40,6 +45,7 @@ done
 
 DUN="$(date -d yesterday +%F)"
 node "$BURA/gunluk-rapor.js" < "$GECICI" > "$CIKTI/$DUN.txt"
+node "$BURA/gecmis.js" < "$GECICI" >/dev/null # günlük geçmiş (~/token-rapor/gecmis.json), panoda son 5 ay
 cat "$CIKTI/$DUN.txt"
 [ "$1" = "--bildirimsiz" ] || notify-send -a "Token raporu" "$(head -1 "$CIKTI/$DUN.txt")" "$(sed -n '3,12p' "$CIKTI/$DUN.txt")" 2>/dev/null
 exit 0
