@@ -96,9 +96,12 @@ const gecmisDosya = path.join(raporDir, 'gecmis.json');
 let gecmisHam = {}; try { gecmisHam = JSON.parse(fs.readFileSync(gecmisDosya, 'utf8')); } catch {}
 const kisaAd = Object.fromEntries(ayar.projeler.map((p) => [path.relative(path.join(os.homedir(), 'projects'), genislet(p.yol)).replace(/[^A-Za-z0-9]/g, '-'), p.ad]));
 const mr3 = (n) => Math.round(n / 1e6) / 1e3;
+// Klasör → kart adı: tam eşleşme, aynı klasörün kopyası ya da worktree'si ("<klasör>-…", ör. Bunker-OS-crm), projeler.json'daki tokenKlasorleri; gerisi "Diğer"
+const kartAdi = (k) => kisaAd[k] || (Object.entries(kisaAd).find(([a]) => k.startsWith(a + '-')) || [])[1]
+  || (ayar.projeler.find((p) => (p.tokenKlasorleri || []).includes(k)) || {}).ad || 'Diğer';
 const gecmis = Object.keys(gecmisHam).sort().filter((g) => Date.now() - Date.parse(g) < 155 * 864e5).map((g) => {
   const pr = {};
-  for (const [k, t] of Object.entries(gecmisHam[g])) pr[kisaAd[k] || k] = (pr[kisaAd[k] || k] || 0) + t;
+  for (const [k, t] of Object.entries(gecmisHam[g])) pr[kartAdi(k)] = (pr[kartAdi(k)] || 0) + t;
   const en = Object.entries(pr).sort((a, b) => b[1] - a[1]).slice(0, 40);
   return { gun: g, toplam: mr3(Object.values(pr).reduce((a, b) => a + b, 0)), projeler: Object.fromEntries(en.map(([k, t]) => [k, mr3(t)])) };
 });

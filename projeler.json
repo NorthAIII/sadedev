@@ -1,10 +1,10 @@
 {
-  "aciklama": "Takip edilen projeler. yol: ana makinedeki klasör; konteyner: VS Code'un açtığı geliştirme konteynerindeki klasör adı (/workspaces/<ad>); yapilacaklar: iş listesi dosyası.",
+  "aciklama": "Takip edilen projeler. yol: ana makinedeki klasör; konteyner: VS Code'un açtığı geliştirme konteynerindeki klasör adı (/workspaces/<ad>); yapilacaklar: iş listesi dosyası; tokenKlasorleri: token geçmişinde bu projeye sayılan başka klasörler (eski sürüm, kuluçka). Kopyalar (<klasör>-…, ör. worktree) kendiliğinden sayılır, gerisi Diğer.",
   "projeler": [
-    { "ad": "Alpfit", "yol": "~/projects/Alpfit.v1", "konteyner": "Alpfit.v1", "yapilacaklar": "YAPILACAKLAR.md" },
-    { "ad": "Alpfit web sitesi", "yol": "~/projects/Alpfitplus website.v3", "yapilacaklar": "YAPILACAKLAR.md" },
+    { "ad": "Alpfit", "yol": "~/projects/Alpfit.v1", "konteyner": "Alpfit.v1", "yapilacaklar": "YAPILACAKLAR.md", "tokenKlasorleri": ["alpfit-kulucka"] },
+    { "ad": "Alpfit web sitesi", "yol": "~/projects/Alpfitplus website.v3", "yapilacaklar": "YAPILACAKLAR.md", "tokenKlasorleri": ["Alpfitplus-website-v2"] },
     { "ad": "Alpfit satış", "yol": "~/projects/alpfit-plus-satis", "yapilacaklar": "YAPILACAKLAR.md" },
-    { "ad": "Bunker OS", "yol": "~/projects/Bunker OS", "konteyner": "Bunker OS", "yapilacaklar": "YAPILACAKLAR.md" },
+    { "ad": "Bunker OS", "yol": "~/projects/Bunker OS", "konteyner": "Bunker OS", "yapilacaklar": "YAPILACAKLAR.md", "tokenKlasorleri": ["pasif-bunker-dashboard"] },
     { "ad": "Yönetim", "yol": "~/projects/sirket/yonetim", "yapilacaklar": "ISLER.md", "yolHaritasi": "HEDEFLER.md", "yolHaritasiAdi": "Hedefler" },
     { "ad": "IT (altyapı)", "yol": "~/projects/altyapi", "yapilacaklar": "ISLER.md" }
   ]
