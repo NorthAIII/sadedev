@@ -1,0 +1,6 @@
+[Unit]
+Description=Sade düzen: günlük token raporu ve pano (model çağırmaz)
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '%h/projects/sade-duzen/token/gunluk-rapor.sh && /usr/bin/node %h/projects/sade-duzen/pano/olustur.js'

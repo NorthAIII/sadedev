@@ -1,0 +1,9 @@
+[Unit]
+Description=Haftalık hafıza dizini, pazartesi sabahı
+
+[Timer]
+OnCalendar=Mon *-*-* 07:30
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,144 @@
+# Sade düzen
+
+Claude Code ile proje geliştirirken DevFlow'un yerine geçen hafif çalışma düzeni. Dört parçası var ve hiçbiri model
+çağırmaz, yani kendisi token harcamaz:
+
+1. **İş düzeni** — her projede tek bir `YAPILACAKLAR.md` ve kısa bir `CLAUDE.md`.
+2. **Hafıza** — her oturumun özetsiz kaydı (kısa süreli) ve haftalık dizini (uzun süreli). Yalnız istenince okunur.
+3. **Token raporu** — her sabah, proje ve model başına dünkü harcama; olağan dışı harcamada uyarı.
+4. **Pano** — aktif projelerin işleri, son commit'i, son oturumu ve tokenı tek sayfada.
+
+Kuruluş: Kiwi AI Lab IT departmanı, Kasım 2026. Kararlar `~/projects/altyapi/KARARLAR.md` (3, 4 ve 5 Kasım).
+
+---
+
+## Neden
+
+Ekim–Kasım 2026 ölçümü (`~/projects/altyapi/devflow-zorlama/NOTLAR.md`):
+
+- Harcanan tokenın **~%97'si**, modelin her adımda bütün bağlamı yeniden okuması. Bir adımda 270–400 bin token
+  okunup yalnız birkaç yüz token yazılıyordu.
+- DevFlow'un belgeleri bu yükü büyütüyordu: Alpfit web sitesinde belgeler kodun 5,5 katıydı, son 30 günün
+  commit'lerinin yalnız %12'si siteye dokunuyordu, her adımda ~30 bin token yalnız CLAUDE.md ve ekleriydi.
+- Tek bir arşiv denetimi 38 saatte 2,8 milyar token harcadı ve hiçbir içeriği değiştirmedi.
+
+Buradan çıkan ilke: **bağlamı küçük tut, geçmişi yalnız gerekince getir, harcamayı her gün gör.**
+Oturum başında "geçmişten şunları bil" diye bilgi yükleyen her sistem maliyeti artırır; bu düzen bunu yapmaz.
+
+---
+
+## Günlük kullanım (Kıvanç için)
+
+**Sabah:** Panoyu aç: `~/pano/index.html` (tarayıcıda). Dünkü token, uyarılar ve her projede sıradaki işler orada.
+
+**Bir projede çalışırken:**
+- Oturuma ne yapacağını söylemen yetmez; "sıradaki işle devam et" dersen `YAPILACAKLAR.md`'nin "Şimdi"sindeki
+  işi yapar, commit eder, listeyi günceller.
+- Büyük bir iş (birkaç günlük) istiyorsan önce plan iste: oturum 5–10 maddelik plan sunar, onaylarsan maddeler
+  "Sıradaki"ye girer.
+- Sırayı sen belirlersin. Oturum yolda yeni bir iş bulursa listeye yazar ve sana söyler, araya sokmaz.
+- Her işte yeni bir sohbet aç. Uzayan sohbet her adımda daha çok okur.
+
+**Geçmişe bakmak:** "Hafızaya bak: geçen hafta takvim hatasını nasıl çözmüştük?" de. Oturum önce dizine, sonra
+yalnız ilgili oturum dosyasına bakar.
+
+**Kaydedilmesini istemediğin bir şey yazacaksan** `<private>` ile `</private>` arasına yaz; hafızaya hiç girmez.
+
+**Model ve efor:** Varsayılan Opus 5.5, efor **High**. Extra high yalnız zor işlerde (para ve hak, çözülemeyen hata,
+mimari karar). Ultracode kapalı. Yeni pencerede model seçicinin kaymadığına bak.
+
+**Uyarı işaretleri:** bir oturum saatlerdir sürüyor ve commit'lerin hepsi `docs:` ise ya da pano uyarı gösteriyorsa
+o oturumda `dur` yaz ve IT'ye sor.
+
+---
+
+## 1. İş düzeni
+
+Her projenin kökünde:
+
+| Dosya | Ne | Şablon |
+|---|---|---|
+| `YAPILACAKLAR.md` | "Şimdi" (tek iş) · "Sıradaki" (sırası plan) · "Kıvanç'ı bekleyen" · "Bitti" (son iki hafta, commit'iyle) | `sablonlar/YAPILACAKLAR.md` |
+| `CLAUDE.md` | En fazla 150 satır (site) ya da 250 satır (ürün); `@` ile içe aktarma yok | `sablonlar/CLAUDE-iskelet.md` |
+| `docs/YOL-HARITASI.md` | Uzun vadeli sıra, en fazla bir sayfa | `sablonlar/YOL-HARITASI.md` |
+| `docs/` | Ürün belgeleri (mimari, API, KVKK, tasarım rehberi); gerektiğinde okunur | — |
+| `arsiv/devflow/` | Eski DevFlow belgeleri; yalnız gerektiğinde grep | — |
+
+Güvenlik ağı DevFlow'suz da kalır: CI, test takımları, riskli değişiklikte (para, hak, eşzamanlılık, yetki,
+kişisel veri, e-posta gönderimi, veritabanı göçü) main'den önce ayrı gözden geçirme, yayın yalnız Kıvanç'ın onayıyla.
+
+**Bir projeyi DevFlow'dan bu düzene geçirmek:** `istemler/gecis-site.md` (web siteleri) ya da `istemler/gecis-urun.md`
+(ürünler) projenin oturumuna yapıştırılır. Oturum bekleyen işleri toplar, kuralları süzer, sana gösterip onay bekler,
+sonra DevFlow'u arşive taşır (silmez) ve listenin ilk işiyle devam eder. Önce yedek alınır (aşağıda).
+
+---
+
+## 2. Hafıza
+
+| | Ne | Ne zaman | Nerede |
+|---|---|---|---|
+| Kısa süreli | Her oturum özetsiz: başlık, tarih, dal, model, token, Kıvanç'ın bütün istekleri, Claude'un yazdığı metinler, o aralıktaki commit'ler ve dosyaları. Düşünme ve araç çıktıları alınmaz. | 08:00 ve 20:00 | `<git-common-dir>/hafiza/kisa/` (`INDEX.md` + `<ay>/<oturum>.md`) |
+| Uzun süreli | Haftanın dizini: Kıvanç'ın kural, düzeltme ve karar cümleleri olduğu gibi, commit'ler türüne göre, geri alınanlar, en çok değişen dosyalar, oturumlar ve tokenları | Pazartesi 07:30 | `<git-common-dir>/hafiza/uzun/<pazartesi>.md` |
+
+- `<git-common-dir>` çoğu projede `.git/`. Orası commit'lenmez, GitHub'a gitmez, geliştirme konteynerinden de görünür.
+- **Maskelenen:** API anahtarları ve tokenlar, `parola=` gibi satırlar, özel anahtarlar, e-posta, telefon, IBAN,
+  11 haneli numaralar. `<private>…</private>` hiç yazılmaz.
+- **Okuma kuralı:** oturum başında okunmaz. Önce `INDEX.md` ya da haftalık dosya, sonra tek oturum dosyası;
+  klasörün tamamı okunmaz. Bunu projeye `istemler/hafiza-notu.md` öğretir.
+- **Sınırı:** haftalık dizin anlam çıkarmaz, ayıklar ve sayar. Bir bilgiyi kalıcı kurala çevirmek istek üzerine
+  yapılır ("haftanın derslerini CLAUDE.md'ye işle"): model yalnız ~10 KB'lık haftalık dosyayı okur.
+- Kayıtlar Claude Code'un kendi oturum dosyalarından üretilir: ana makinede `~/.claude/projects/`, konteynerlerde
+  `/home/*/.claude/projects/` (çalışan konteynerden `docker exec`, kapanmıştan `docker cp`).
+
+Elle: `node hafiza/calistir.js` (kısa) · `node hafiza/calistir.js --hafta` (geçen haftanın dizini).
+
+---
+
+## 3. Token raporu
+
+Her sabah 08:30 `~/token-rapor/<dün>.txt` yazılır, özeti masaüstüne bildirim olarak gelir. İçinde proje ve model
+başına dünkü token, 7 günlük ortalama ve şu uyarılar:
+
+- bir proje kendi 7 günlük ortalamasının iki katını aştı (ve 0,3 milyardan fazla);
+- tek bir oturum 12 saatten uzun sürdü ve son 24 saatte 0,5 milyardan fazla harcadı.
+
+Toplamın ~%97'si önbellekten okumadır; rapor ikisini ayrı da verir. Elle: `token/gunluk-rapor.sh --bildirimsiz`.
+Ayrıntılı ölçüm betikleri `token/olcum/` (oturum başına, çağrı başına bağlam, efor kırılımı; `token/olcum/OKUBENI.md`).
+
+---
+
+## 4. Pano
+
+`node pano/olustur.js` → `~/pano/index.html`. Token raporundan hemen sonra her sabah kendiliğinden yenilenir.
+Projeler `projeler.json`'da: `ad`, `yol`, varsa `konteyner` (VS Code konteynerindeki klasör adı) ve iş listesi dosyası.
+
+---
+
+## Kurulum
+
+Gereken: Node.js 20+, git, Docker (konteyner kayıtları için), systemd kullanıcı oturumu. Sudo gerekmez.
+
+1. Depoyu `~/projects/sade-duzen`'e koy (zamanlayıcılar bu yolu kullanır).
+2. `projeler.json`'u düzenle.
+3. Zamanlayıcıları kur: `systemd/kur.sh` (kaldırmak: `systemd/kur.sh --kaldir`).
+4. Elle bir kez dene: `node hafiza/calistir.js` ve `token/gunluk-rapor.sh --bildirimsiz && node pano/olustur.js`.
+5. Sade düzene geçmiş her projenin oturumuna `istemler/hafiza-notu.md`'yi bir kez yapıştır.
+
+Sır taraması: `git config core.hooksPath .githooks` (commit'te şifre benzeri satır varsa durdurur).
+
+---
+
+## Geri dönüş
+
+DevFlow'a dönülecekse: kod git'te ve `~/arsiv/devflow-oncesi-2026-11-05/`'teki yedeklerde durur; DevFlow belgeleri
+projenin `arsiv/devflow/` klasöründen geri taşınır. Belgeler aradaki işle eşit olmayacağı için bir eşitleme oturumu
+gerekir. Deneme değerlendirmesi 12 Kasım 2026 (hız, token, kalite).
+
+---
+
+## Sonra
+
+- Pano verisini Bunker OS'a taşımak (Yönetim bekleme listesi).
+- Kullanılmayan eklenti ve bağlantıları proje bazında kapatmak: her adımda ~35 bin token sabit yük var; Claude
+  Code'un yerleşik araç tanımları değiştirilmez, yalnız gereksiz eklenti/bağlantı kapatılır. Önce yeni bir pencerede
+  `/context` ile ölçülür.

@@ -1,0 +1,9 @@
+[Unit]
+Description=Token raporu ve pano, her sabah
+
+[Timer]
+OnCalendar=*-*-* 08:30
+Persistent=true
+
+[Install]
+WantedBy=timers.target

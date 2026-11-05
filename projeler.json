@@ -1,0 +1,9 @@
+{
+  "aciklama": "Takip edilen projeler. yol: ana makinedeki klasör; konteyner: VS Code'un açtığı geliştirme konteynerindeki klasör adı (/workspaces/<ad>); yapilacaklar: iş listesi dosyası.",
+  "projeler": [
+    { "ad": "Alpfit", "yol": "~/projects/Alpfit.v1", "konteyner": "Alpfit.v1", "yapilacaklar": "YAPILACAKLAR.md" },
+    { "ad": "Alpfit web sitesi", "yol": "~/projects/Alpfitplus website.v3", "yapilacaklar": "YAPILACAKLAR.md" },
+    { "ad": "Bunker OS", "yol": "~/projects/Bunker OS", "konteyner": "Bunker OS", "yapilacaklar": "YAPILACAKLAR.md" },
+    { "ad": "IT (altyapı)", "yol": "~/projects/altyapi", "yapilacaklar": "ISLER.md" }
+  ]
+}

@@ -1,0 +1,6 @@
+[Unit]
+Description=Sade düzen: kısa süreli hafıza (model çağırmaz)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/node %h/projects/sade-duzen/hafiza/calistir.js
