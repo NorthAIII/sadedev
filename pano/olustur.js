@@ -18,13 +18,29 @@ function isListesi(dosya) {
   const bolum = []; let b = null;
   for (const l of fs.readFileSync(dosya, 'utf8').split('\n')) {
     const h = l.match(/^##\s+(.*)/);
-    if (h) { b = { ad: h[1].trim(), acik: [], bitti: 0 }; bolum.push(b); continue; }
+    if (h) { b = { ad: h[1].trim(), acik: [], yapildi: [] }; bolum.push(b); continue; }
     if (!b) continue;
     const m = l.match(/^\s*- \[( |x|X)\]\s+(.*)/);
-    if (m) m[1] === ' ' ? b.acik.push(m[2]) : b.bitti++;
+    if (m) (m[1] === ' ' ? b.acik : b.yapildi).push(m[2]);
   }
   return bolum;
 }
+
+// Yol haritası: tablo satırları ya da madde işaretleri (ilk sütun = ne, son iki sütun = hedef ve durum)
+function yolHaritasi(dosya) {
+  if (!fs.existsSync(dosya)) return null;
+  const madde = [];
+  for (const l of fs.readFileSync(dosya, 'utf8').split('\n')) {
+    if (/^\|/.test(l) && !/^\|\s*-/.test(l)) {
+      const h = l.split('|').slice(1, -1).map((x) => x.trim());
+      if (!h[0] || /^(ne|iş|is|sürüm|surum)$/i.test(h[0])) continue;
+      madde.push(h.length > 2 ? `${h[0]} — ${h.slice(-2).filter(Boolean).join(' · ')}` : h.join(' — '));
+    } else if (/^\s*[-*] /.test(l)) madde.push(l.replace(/^\s*[-*] (\[[ xX]\] )?/, ''));
+  }
+  return madde;
+}
+const liste = (b, n) => `<ul>${b.slice(0, n).map((x) => `<li>${md(x.slice(0, 200))}</li>`).join('')}${b.length > n ? `<li class="soluk">… +${b.length - n}</li>` : ''}</ul>`;
+const bag = (f, ad) => fs.existsSync(f) ? ` <a href="file://${encodeURI(f)}">${ad}</a>` : '';
 
 const kart = ayar.projeler.map((p) => {
   const yol = genislet(p.yol);
@@ -36,9 +52,21 @@ const kart = ayar.projeler.map((p) => {
   const sonOturum = fs.existsSync(idx) ? (fs.readFileSync(idx, 'utf8').trim().split('\n').filter((l) => l.startsWith('- ')).at(-1) || '').replace(/ · `.*`$/, '').slice(2) : '';
   const tokSatir = rapor.split('\n').find((l) => l.startsWith(path.basename(yol).replace(/[^A-Za-z0-9]/g, '-') + ' '));
   const tok = tokSatir ? tokSatir.trim().split(/\s{2,}/) : null;
-  const liste = isListesi(path.join(yol, p.yapilacaklar || 'YAPILACAKLAR.md'));
-  const govde = !liste ? '<p class="soluk">İş listesi yok</p>' : liste.filter((b) => b.acik.length && !/^bitti|^kapand/i.test(b.ad))
-    .map((b) => `<h3>${kac(b.ad)} <span class="sayi">${b.acik.length}</span></h3><ul>${b.acik.slice(0, 5).map((x) => `<li>${md(x.slice(0, 220))}</li>`).join('')}${b.acik.length > 5 ? `<li class="soluk">… +${b.acik.length - 5}</li>` : ''}</ul>`).join('') || '<p class="soluk">Açık iş yok</p>';
+  const isDosya = path.join(yol, p.yapilacaklar || 'YAPILACAKLAR.md');
+  const yhDosya = path.join(yol, 'docs', 'YOL-HARITASI.md');
+  const yh = yolHaritasi(yhDosya), bolum = isListesi(isDosya);
+  let govde = '';
+  govde += `<h3>Yol haritası${bag(yhDosya, 'tamamı')}</h3>` + (yh && yh.length ? liste(yh, 6) : '<p class="soluk">docs/YOL-HARITASI.md yok</p>');
+  if (!bolum) govde += '<p class="soluk">İş listesi yok</p>';
+  else {
+    const acik = bolum.filter((b) => b.acik.length && !/^bitti|^kapand/i.test(b.ad));
+    govde += acik.map((b, k) => `<h3>${kac(b.ad)} <span class="sayi">${b.acik.length}</span>${k === 0 ? bag(isDosya, 'liste') : ''}</h3>${liste(b.acik, /^şimdi/i.test(b.ad) ? 1 : 4)}`).join('') || '<p class="soluk">Açık iş yok</p>';
+  }
+  // Son yapılanlar: listenin "Bitti"si varsa o, yoksa son 7 günün ürün commit'leri (docs/chore hariç)
+  const bitti = bolum && bolum.find((b) => /^bitti/i.test(b.ad));
+  const sonIs = bitti && bitti.yapildi.length ? bitti.yapildi.slice(-5).reverse()
+    : sh(`git -C '${yol}' log --since='7 days ago' --no-merges --format='%ad %s' --date=format:'%d.%m'`).split('\n').filter((l) => /^\S+ (feat|fix|perf|refactor)/.test(l)).slice(0, 5);
+  if (sonIs.length) govde += `<h3>Son yapılanlar</h3>${liste(sonIs, 5)}`;
   return `<section class="kart"><header><h2>${kac(p.ad)}</h2><span class="dal">${kac(dal)}</span></header>
   <dl><dt>Son commit</dt><dd>${kac(son || '-')}</dd><dt>Son oturum</dt><dd>${kac(sonOturum || '-')}</dd>
   <dt>Dün token</dt><dd>${tok ? `${kac(tok[1])} milyar · 7 gün ort. ${kac(tok[2])}${tok[3] ? ` · ${kac(tok[3])}` : ''}` : '-'}</dd></dl>${govde}</section>`;
@@ -58,7 +86,7 @@ main{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:
 .kart header{display:flex;justify-content:space-between;align-items:baseline}.kart h2{font-size:17px;margin:0}
 .dal{font:12px ui-monospace,monospace;color:var(--soluk)}dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px;margin:10px 0}
 dt{color:var(--soluk)}dd{margin:0;overflow-wrap:anywhere}h3{font-size:14px;margin:12px 0 4px}.sayi{color:var(--soluk);font-weight:normal}
-ul{margin:0;padding-left:18px}li{margin:2px 0;overflow-wrap:anywhere}code{font-size:12px}.soluk{color:var(--soluk)}
+ul{margin:0;padding-left:18px}a{color:var(--vurgu);font-size:12px;font-weight:normal;margin-left:6px}li{margin:2px 0;overflow-wrap:anywhere}code{font-size:12px}.soluk{color:var(--soluk)}
 details{margin-top:20px}pre{background:var(--kart);border:1px solid var(--cizgi);border-radius:8px;padding:12px;overflow-x:auto;font-size:12px}
 </style></head><body>
 <div class="ust"><div><h1>Çalışma Panosu</h1><div class="ozet">${kac(ozet)}</div>${uyari ? `<div class="uyari">${kac(uyari)}</div>` : ''}</div>

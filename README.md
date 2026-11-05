@@ -109,8 +109,14 @@ Ayrıntılı ölçüm betikleri `token/olcum/` (oturum başına, çağrı başı
 
 ## 4. Pano
 
-`node pano/olustur.js` → `~/pano/index.html`. Token raporundan hemen sonra her sabah kendiliğinden yenilenir.
-Projeler `projeler.json`'da: `ad`, `yol`, varsa `konteyner` (VS Code konteynerindeki klasör adı) ve iş listesi dosyası.
+Her proje için tek kart: **yol haritası** (`docs/YOL-HARITASI.md`), **Şimdi**, **Sıradaki**, **Kıvanç'ı bekleyen**,
+**son yapılanlar** (listenin "Bitti"si, yoksa son 7 günün ürün commit'leri), son commit, son oturum, dünkü token.
+"Projeden kopunca ne yaptık, ne yapacağız" sorusunun cevabı burası; model çağırmadan, dosyalardan üretilir.
+
+- Açmak: uygulamalar menüsünde **Çalışma Panosu** (yeniler ve açar) ya da `pano/ac.sh`.
+- Kendiliğinden yenilenir: 08:00, 08:30 ve 20:00.
+- Projeler `projeler.json`'da: `ad`, `yol`, varsa `konteyner` (VS Code konteynerindeki klasör adı) ve iş listesi dosyası.
+- Yol haritası tablo (`| Ne | Neden | Hedef tarih | Durum |`) ya da madde listesi olabilir; panoda ilk 6 satır görünür.
 
 ---
 
