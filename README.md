@@ -39,6 +39,8 @@ Oturum başında "geçmişten şunları bil" diye bilgi yükleyen her sistem mal
 - Sırayı sen belirlersin. Oturum yolda yeni bir iş bulursa listeye yazar ve sana söyler, araya sokmaz.
 - Her işte yeni bir sohbet aç. Uzayan sohbet her adımda daha çok okur.
 
+**Gece ya da uzun koşu:** yatmadan önce projenin yeni bir sohbetine `istemler/gece-kosusu.md`'deki istemi yapıştır. "Şimdi" ve "Sıradaki"deki işleri, her birini ayrı bir alt ajanda, soru sormadan sırayla yapar; soru çıkaran iş "Kıvanç'ı bekleyen"e iner. Sabah raporu sohbette. Yayın ve `main` koşuya girmez. Durdurmak için `dur`.
+
 **Geçmişe bakmak:** "Hafızaya bak: geçen hafta takvim hatasını nasıl çözmüştük?" de. Oturum önce dizine, sonra
 yalnız ilgili oturum dosyasına bakar.
 
