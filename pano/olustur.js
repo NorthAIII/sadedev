@@ -65,7 +65,7 @@ const kart = ayar.projeler.map((p) => {
   // Son yapılanlar: listenin "Bitti"si varsa o, yoksa son 7 günün ürün commit'leri (docs/chore hariç)
   const bitti = bolum && bolum.find((b) => /^bitti/i.test(b.ad));
   const sonIs = bitti && bitti.yapildi.length ? bitti.yapildi.slice(-5).reverse()
-    : sh(`git -C '${yol}' log --since='7 days ago' --no-merges --format='%ad %s' --date=format:'%d.%m'`).split('\n').filter((l) => /^\S+ (feat|fix|perf|refactor)/.test(l)).slice(0, 5);
+    : sh(`git -C '${yol}' log --since='7 days ago' --no-merges --format='%ad %s' --date=format:'%d.%m'`).split('\n').filter((l) => /^\S+ (feat|fix|perf|refactor)/.test(l)).slice(0, 5).map((l) => l.length > 120 ? l.slice(0, 117) + '…' : l);
   if (sonIs.length) govde += `<h3>Son yapılanlar</h3>${liste(sonIs, 5)}`;
   return `<section class="kart"><header><h2>${kac(p.ad)}</h2><span class="dal">${kac(dal)}</span></header>
   <dl><dt>Son commit</dt><dd>${kac(son || '-')}</dd><dt>Son oturum</dt><dd>${kac(sonOturum || '-')}</dd>
