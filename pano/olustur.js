@@ -42,6 +42,7 @@ function yolHaritasi(dosya) {
 const liste = (b, n) => `<ul>${b.slice(0, n).map((x) => `<li>${md(x.slice(0, 200))}</li>`).join('')}${b.length > n ? `<li class="soluk">… +${b.length - n}</li>` : ''}</ul>`;
 const bag = (f, ad) => fs.existsSync(f) ? ` <a href="file://${encodeURI(f)}">${ad}</a>` : '';
 
+const veri = { olusturma: new Date().toISOString(), projeler: [] };
 const kart = ayar.projeler.map((p) => {
   const yol = genislet(p.yol);
   if (!fs.existsSync(yol)) return '';
@@ -67,6 +68,9 @@ const kart = ayar.projeler.map((p) => {
   const sonIs = bitti && bitti.yapildi.length ? bitti.yapildi.slice(-5).reverse()
     : sh(`git -C '${yol}' log --since='7 days ago' --no-merges --format='%ad %s' --date=format:'%d.%m'`).split('\n').filter((l) => /^\S+ (feat|fix|perf|refactor)/.test(l)).slice(0, 5).map((l) => l.length > 120 ? l.slice(0, 117) + '…' : l);
   if (sonIs.length) govde += `<h3>Son yapılanlar</h3>${liste(sonIs, 5)}`;
+  veri.projeler.push({ ad: p.ad, dal, sonCommit: son, sonOturum,
+    token: tok ? { dun: tok[1], ort7: tok[2], modeller: tok[3] || '' } : null,
+    yolHaritasi: yh || [], bolumler: (bolum || []).map((b) => ({ ad: b.ad, acik: b.acik, bitti: b.yapildi })), sonYapilanlar: sonIs });
   return `<section class="kart"><header><h2>${kac(p.ad)}</h2><span class="dal">${kac(dal)}</span></header>
   <dl><dt>Son commit</dt><dd>${kac(son || '-')}</dd><dt>Son oturum</dt><dd>${kac(sonOturum || '-')}</dd>
   <dt>Dün token</dt><dd>${tok ? `${kac(tok[1])} milyar · 7 gün ort. ${kac(tok[2])}${tok[3] ? ` · ${kac(tok[3])}` : ''}` : '-'}</dd></dl>${govde}</section>`;
@@ -96,4 +100,6 @@ details{margin-top:20px}pre{background:var(--kart);border:1px solid var(--cizgi)
 </body></html>`;
 const cikti = path.join(os.homedir(), 'pano'); fs.mkdirSync(cikti, { recursive: true });
 fs.writeFileSync(path.join(cikti, 'index.html'), html);
+veri.token = { ozet, uyarilar: uyari ? uyari.split('\n').map((x) => x.replace(/^⚠ /, '')) : [], rapor };
+fs.writeFileSync(path.join(cikti, 'pano.json'), JSON.stringify(veri, null, 1));
 console.log(path.join(cikti, 'index.html'));

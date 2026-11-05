@@ -3,4 +3,4 @@ Description=Sade düzen: günlük token raporu ve pano (model çağırmaz)
 
 [Service]
 Type=oneshot
-ExecStart=/bin/bash -c '%h/projects/sadedev/token/gunluk-rapor.sh && /usr/bin/node %h/projects/sadedev/pano/olustur.js'
+ExecStart=/bin/bash -c '%h/projects/sadedev/token/gunluk-rapor.sh && /usr/bin/node %h/projects/sadedev/pano/olustur.js && %h/projects/sadedev/pano/gonder.sh'

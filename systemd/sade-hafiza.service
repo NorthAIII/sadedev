@@ -5,3 +5,4 @@ Description=Sade düzen: kısa süreli hafıza (model çağırmaz)
 Type=oneshot
 ExecStart=/usr/bin/node %h/projects/sadedev/hafiza/calistir.js
 ExecStartPost=/usr/bin/node %h/projects/sadedev/pano/olustur.js
+ExecStartPost=-%h/projects/sadedev/pano/gonder.sh
