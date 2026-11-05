@@ -55,6 +55,12 @@ for (const p of ayar.projeler) {
   const host = path.join(os.homedir(), '.claude', 'projects', anahtar(repo));
   if (fs.existsSync(host)) kaynak.push({ dir: host });
   if (p.konteyner) for (const g of konteynerKayitlari(anahtar('/workspaces/' + p.konteyner))) kaynak.push({ dir: g, gecici: true });
+  // Konteynerin ~/.claude'ı ana makineye bağlıysa (~/.claude-konteyner/<ad>/projects) kapalıyken de okunur; aynı oturum iki kez yazılırsa aynı dosya olur
+  const kk = path.join(os.homedir(), '.claude-konteyner');
+  if (p.konteyner && fs.existsSync(kk)) for (const a of fs.readdirSync(kk)) {
+    const d = path.join(kk, a, 'projects', anahtar('/workspaces/' + p.konteyner));
+    if (fs.existsSync(d)) kaynak.push({ dir: d });
+  }
   for (const k of kaynak) {
     execFileSync('node', [path.join(__dirname, 'kisa-topla.js'), k.dir, repo, kisa, String(GUN)], { stdio: 'inherit' });
     if (k.gecici) fs.rmSync(k.dir, { recursive: true });

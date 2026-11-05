@@ -1,6 +1,6 @@
 // Sade düzen izlemesi: her proje için tek satır ve uyarılar. Model çağırmaz, dosyalara ve git'e bakar.
 // Kullanım: node izle/izle.js  (ana makinede; konteynerde ~/projects yoksa /workspaces/<klasör> denenir)
-// Uyarı varsa çıkış kodu 1. Oturum süresi hafıza dizininden: ilk ve son mesaj arası, boş bekleme dahil.
+// Uyarı varsa çıkış kodu 1. --json: tablo yerine { <proje>: { uyarilar, ci: { durum, dal } } } (pano bunu Bunker'a gönderir). Oturum süresi hafıza dizininden: ilk ve son mesaj arası, boş bekleme dahil.
 const fs = require('fs'), os = require('os'), path = require('path'), { execSync } = require('child_process');
 const KOK = path.dirname(__dirname);
 const ayar = JSON.parse(fs.readFileSync(process.env.PROJELER || path.join(KOK, 'projeler.json'), 'utf8'));
@@ -74,10 +74,10 @@ function ci(yol, dal) {
   const j = sh(`gh run list -R ${q(repo)} --branch ${q(dal)} --limit 10 --json status,conclusion,createdAt,workflowName`, yol);
   if (!j) return { metin: '?' };
   const k = JSON.parse(j).find((r) => r.status === 'completed');
-  return k ? { metin: k.conclusion === 'success' ? 'yeşil' : k.conclusion, kirmizi: !['success', 'skipped', 'cancelled'].includes(k.conclusion), is: k.workflowName } : { metin: 'koşu yok' };
+  return k ? { durum: k.conclusion === 'success' ? 'yeşil' : !['skipped', 'cancelled'].includes(k.conclusion) ? 'kırmızı' : '-', metin: k.conclusion === 'success' ? 'yeşil' : k.conclusion, kirmizi: !['success', 'skipped', 'cancelled'].includes(k.conclusion), is: k.workflowName } : { metin: 'koşu yok' };
 }
 
-const satirlar = [], uyari = [];
+const satirlar = [], uyari = [], kart = {};
 for (const p of ayar.projeler) {
   let yol = genislet(p.yol);
   if (!fs.existsSync(yol)) yol = path.join('/workspaces', p.konteyner || path.basename(yol));
@@ -85,7 +85,8 @@ for (const p of ayar.projeler) {
   if (!fs.existsSync(isDosya)) continue;
   const metin = fs.readFileSync(isDosya, 'utf8'), simdi = simdiMetni(metin);
   if (simdi === null) continue; // "Şimdi"si olmayan liste sade düzende değil (ör. IT'nin ISLER.md'si)
-  const u = (s) => uyari.push(`${p.ad}: ${s}`);
+  const kp = (kart[p.ad] = { uyarilar: [], ci: { durum: '-', dal: '' } });
+  const u = (s) => { uyari.push(`${p.ad}: ${s}`); kp.uyarilar.push(s); };
 
   const dal = sh('git branch --show-current', yol);
   const gitDir = sh('git rev-parse --path-format=absolute --git-common-dir', yol);
@@ -103,6 +104,7 @@ for (const p of ayar.projeler) {
   const ot = oturumlar(gitDir), hafta = ot && ot.filter((o) => SIMDI - o.son < 7 * 864e5);
   const enUzun = hafta && hafta.length ? hafta.reduce((a, b) => (b.saat > a.saat ? b : a)) : null;
   const c = ci(yol, dal);
+  kp.ci = { durum: c.durum || '-', dal: dal || '' };
 
   satirlar.push([p.ad, `${commit24} · ${kisalt(son, 48)}`, `${kisalt(baslik, 40) || '(boş)'} · ${simdiSaat === null ? '?' : simdiSaat + ' sa'}`,
     String(bitti), String(kirli), tokMetin, enUzun ? `${enUzun.saat.toFixed(1)} sa · ${kisalt(enUzun.ad, 28)}` : '-', c.metin]);
@@ -118,6 +120,8 @@ for (const p of ayar.projeler) {
   if (simdiSaat !== null && simdiSaat >= 24) u(`"Şimdi" ${simdiSaat} saattir değişmedi`);
   if (kirli > 300) u(`${kirli} commit edilmemiş dosya`);
 }
+
+if (process.argv.includes('--json')) { console.log(JSON.stringify(kart)); process.exit(0); }
 
 const bas = ['Proje', '24s commit · son', 'Şimdi · değişmeyen', 'Bitti bugün', 'Kirli', 'Token dün/7g (milyar)', 'En uzun oturum (7g)', 'CI'];
 const gen = bas.map((b, i) => Math.max(b.length, ...satirlar.map((s) => s[i].length)));

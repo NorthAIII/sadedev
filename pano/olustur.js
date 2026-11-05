@@ -51,6 +51,9 @@ function yolHaritasi(dosya) {
 const liste = (b, n) => `<ul>${b.slice(0, n).map((x) => `<li>${md(x.slice(0, 200))}</li>`).join('')}${b.length > n ? `<li class="soluk">… +${b.length - n}</li>` : ''}</ul>`;
 const bag = (f, ad) => fs.existsSync(f) ? ` <a href="file://${encodeURI(f)}">${ad}</a>` : '';
 
+// Proje uyarıları ve CI (izle/izle.js --json; yalnız "Şimdi"si olan projeler)
+let izle = {}; try { izle = JSON.parse(sh(`node '${path.join(KOK, 'izle', 'izle.js')}' --json`) || '{}'); } catch {}
+
 const veri = { olusturma: new Date().toISOString(), projeler: [] };
 const kart = ayar.projeler.map((p) => {
   const yol = genislet(p.yol);
@@ -78,12 +81,14 @@ const kart = ayar.projeler.map((p) => {
   const sonIs = bitti && bitti.yapildi.length ? bitti.yapildi.slice(-5).reverse()
     : sh(`git -C '${yol}' log --since='7 days ago' --no-merges --format='%ad %s' --date=format:'%d.%m'`).split('\n').filter((l) => /^\S+ (feat|fix|perf|refactor)/.test(l)).slice(0, 5).map((l) => l.length > 120 ? l.slice(0, 117) + '…' : l);
   if (sonIs.length) govde += `<h3>Son yapılanlar</h3>${liste(sonIs, 5)}`;
-  veri.projeler.push({ ad: p.ad, ...(p.yolHaritasiAdi ? { yolHaritasiAdi: p.yolHaritasiAdi } : {}), dal, sonCommit: son, sonOturum,
+  const iz = izle[p.ad];
+  if (iz && iz.uyarilar.length) govde = `<h3 class="uyari">Uyarılar <span class="sayi">${iz.uyarilar.length}</span></h3>${liste(iz.uyarilar, 5)}` + govde;
+  veri.projeler.push({ ad: p.ad, ...(p.yolHaritasiAdi ? { yolHaritasiAdi: p.yolHaritasiAdi } : {}), ...(iz ? { uyarilar: iz.uyarilar, ci: iz.ci } : {}), dal, sonCommit: son, sonOturum,
     token: tok ? { dun: tok[1], ort7: tok[2], modeller: tok[3] || '' } : null,
     yolHaritasi: yh || [], bolumler: (bolum || []).map((b) => ({ ad: b.ad, acik: b.acik, bitti: b.yapildi })), sonYapilanlar: sonIs });
   return `<section class="kart"><header><h2>${kac(p.ad)}</h2><span class="dal">${kac(dal)}</span></header>
   <dl><dt>Son commit</dt><dd>${kac(son || '-')}</dd><dt>Son oturum</dt><dd>${kac(sonOturum || '-')}</dd>
-  <dt>Dün token</dt><dd>${tok ? `${kac(tok[1])} milyar · 7 gün ort. ${kac(tok[2])}${tok[3] ? ` · ${kac(tok[3])}` : ''}` : '-'}</dd></dl>${govde}</section>`;
+  ${iz && iz.ci.durum !== '-' ? `<dt>CI</dt><dd>${kac(iz.ci.durum)}</dd>` : ''}<dt>Dün token</dt><dd>${tok ? `${kac(tok[1])} milyar · 7 gün ort. ${kac(tok[2])}${tok[3] ? ` · ${kac(tok[3])}` : ''}` : '-'}</dd></dl>${govde}</section>`;
 }).join('\n');
 
 // Günlük token geçmişi (token/gecmis.js yazar): son 155 gün, milyar; proje adları projeler.json'dakiler
