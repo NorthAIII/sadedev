@@ -67,6 +67,8 @@ Her projenin kökünde:
 Güvenlik ağı DevFlow'suz da kalır: CI, test takımları, riskli değişiklikte (para, hak, eşzamanlılık, yetki,
 kişisel veri, e-posta gönderimi, veritabanı göçü) main'den önce ayrı gözden geçirme, yayın yalnız Kıvanç'ın onayıyla.
 
+**Claude'un yerel hafıza dosyası:** DevFlow, her projenin `~/.claude/projects/<proje>/memory/MEMORY.md` dosyasına "hafıza `_dev/MEMORY.md`'de" yönlendirmesi koyar ve bu dosya her oturumda bağlama girer. Geçişten sonra IT bu dosyayı `sablonlar/claude-yerel-MEMORY.md` ile değiştirir (eskisi `~/arsiv/`'e); yoksa Claude `_dev/`'i yeniden oluşturmaya kalkabilir. Konteynerde çalışan projede dosya konteynerin içindedir (`/home/<kullanıcı>/.claude/projects/-workspaces-<proje>/memory/`).
+
 **Bir projeyi DevFlow'dan bu düzene geçirmek:** `istemler/gecis-site.md` (web siteleri) ya da `istemler/gecis-urun.md`
 (ürünler) projenin oturumuna yapıştırılır. Oturum bekleyen işleri toplar, kuralları süzer, sana gösterip onay bekler,
 sonra DevFlow'u arşive taşır (silmez) ve listenin ilk işiyle devam eder. Önce yedek alınır (aşağıda).
