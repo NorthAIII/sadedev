@@ -12,7 +12,7 @@ const md = (s) => kac(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*(
 const raporDir = path.join(os.homedir(), 'token-rapor');
 const raporlar = fs.existsSync(raporDir) ? fs.readdirSync(raporDir).filter((f) => /^\d{4}-\d{2}-\d{2}\.txt$/.test(f)).sort() : [];
 const rapor = raporlar.length ? fs.readFileSync(path.join(raporDir, raporlar.at(-1)), 'utf8') : '';
-// Son 24 saatin canlı alarmları (token/canli-alarm.sh yazar: "YYYY-MM-DD HH:MM  metin", TR saati); yalnız bu sayfada, pano.json'a girmez
+// Son 24 saatin canlı alarmları (token/canli-alarm.sh yazar: "YYYY-MM-DD HH:MM  metin", TR saati); pano.json'da token.uyarilar'a eklenir
 const alarmDosya = path.join(raporDir, 'canli-alarm.log');
 const alarmlar = (fs.existsSync(alarmDosya) ? fs.readFileSync(alarmDosya, 'utf8').split('\n') : [])
   .map((l) => l.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})  (.*)/)).filter(Boolean)
@@ -55,18 +55,19 @@ const veri = { olusturma: new Date().toISOString(), projeler: [] };
 const kart = ayar.projeler.map((p) => {
   const yol = genislet(p.yol);
   if (!fs.existsSync(yol)) return '';
-  const son = sh(`git -C '${yol}' log -1 --format='%ad · %s' --date=format:'%d.%m %H:%M'`).slice(0, 110);
+  const son = sh(`git -C '${yol}' log -1 --format='%ad · %s' --date=format:'%d.%m %H:%M' -- .`).slice(0, 110); // alt klasörse yalnız onun commit'i
   const dal = sh(`git -C '${yol}' branch --show-current`);
   const gitDir = sh(`git -C '${yol}' rev-parse --path-format=absolute --git-common-dir`);
-  const idx = path.join(gitDir, 'hafiza', 'kisa', 'INDEX.md');
+  const idx = path.join(gitDir, 'hafiza', path.relative(sh(`git -C '${yol}' rev-parse --show-toplevel`), yol), 'kisa', 'INDEX.md');
   const sonOturum = fs.existsSync(idx) ? (fs.readFileSync(idx, 'utf8').trim().split('\n').filter((l) => l.startsWith('- ')).at(-1) || '').replace(/ · `.*`$/, '').slice(2) : '';
-  const tokSatir = rapor.split('\n').find((l) => l.startsWith(path.basename(yol).replace(/[^A-Za-z0-9]/g, '-') + ' '));
+  const tokSatir = rapor.split('\n').find((l) => l.startsWith(path.relative(path.join(os.homedir(), 'projects'), yol).replace(/[^A-Za-z0-9]/g, '-') + ' '));
   const tok = tokSatir ? tokSatir.trim().split(/\s{2,}/) : null;
   const isDosya = path.join(yol, p.yapilacaklar || 'YAPILACAKLAR.md');
-  const yhDosya = path.join(yol, 'docs', 'YOL-HARITASI.md');
+  // Yol haritası yerine başka bir dosya ve başlık (ör. Yönetim'in HEDEFLER.md'si): projeler.json → yolHaritasi, yolHaritasiAdi
+  const yhDosya = path.join(yol, p.yolHaritasi || 'docs/YOL-HARITASI.md'), yhAd = p.yolHaritasiAdi || 'Yol haritası';
   const yh = yolHaritasi(yhDosya), bolum = isListesi(isDosya);
   let govde = '';
-  govde += `<h3>Yol haritası${bag(yhDosya, 'tamamı')}</h3>` + (yh && yh.length ? liste(yh, 6) : '<p class="soluk">docs/YOL-HARITASI.md yok</p>');
+  govde += `<h3>${kac(yhAd)}${bag(yhDosya, 'tamamı')}</h3>` + (yh && yh.length ? liste(yh, 6) : `<p class="soluk">${kac(path.relative(yol, yhDosya))} yok</p>`);
   if (!bolum) govde += '<p class="soluk">İş listesi yok</p>';
   else {
     const acik = bolum.filter((b) => b.acik.length && !/^bitti|^kapand/i.test(b.ad));
@@ -77,7 +78,7 @@ const kart = ayar.projeler.map((p) => {
   const sonIs = bitti && bitti.yapildi.length ? bitti.yapildi.slice(-5).reverse()
     : sh(`git -C '${yol}' log --since='7 days ago' --no-merges --format='%ad %s' --date=format:'%d.%m'`).split('\n').filter((l) => /^\S+ (feat|fix|perf|refactor)/.test(l)).slice(0, 5).map((l) => l.length > 120 ? l.slice(0, 117) + '…' : l);
   if (sonIs.length) govde += `<h3>Son yapılanlar</h3>${liste(sonIs, 5)}`;
-  veri.projeler.push({ ad: p.ad, dal, sonCommit: son, sonOturum,
+  veri.projeler.push({ ad: p.ad, ...(p.yolHaritasiAdi ? { yolHaritasiAdi: p.yolHaritasiAdi } : {}), dal, sonCommit: son, sonOturum,
     token: tok ? { dun: tok[1], ort7: tok[2], modeller: tok[3] || '' } : null,
     yolHaritasi: yh || [], bolumler: (bolum || []).map((b) => ({ ad: b.ad, acik: b.acik, bitti: b.yapildi })), sonYapilanlar: sonIs });
   return `<section class="kart"><header><h2>${kac(p.ad)}</h2><span class="dal">${kac(dal)}</span></header>
@@ -110,6 +111,6 @@ ${alarmlar.length ? `<h3 class="uyari">Canlı alarmlar, son 24 saat <span class=
 </body></html>`;
 const cikti = path.join(os.homedir(), 'pano'); fs.mkdirSync(cikti, { recursive: true });
 fs.writeFileSync(path.join(cikti, 'index.html'), html);
-veri.token = { ozet, uyarilar: uyari ? uyari.split('\n').map((x) => x.replace(/^⚠ /, '')) : [], rapor };
+veri.token = { ozet, uyarilar: [...alarmlar.map((x) => `Canlı alarm ${x}`), ...(uyari ? uyari.split('\n').map((x) => x.replace(/^⚠ /, '')) : [])], rapor };
 fs.writeFileSync(path.join(cikti, 'pano.json'), JSON.stringify(veri, null, 1));
 console.log(path.join(cikti, 'index.html'));

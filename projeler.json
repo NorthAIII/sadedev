@@ -5,6 +5,7 @@
     { "ad": "Alpfit web sitesi", "yol": "~/projects/Alpfitplus website.v3", "yapilacaklar": "YAPILACAKLAR.md" },
     { "ad": "Alpfit satış", "yol": "~/projects/alpfit-plus-satis", "yapilacaklar": "YAPILACAKLAR.md" },
     { "ad": "Bunker OS", "yol": "~/projects/Bunker OS", "konteyner": "Bunker OS", "yapilacaklar": "YAPILACAKLAR.md" },
+    { "ad": "Yönetim", "yol": "~/projects/sirket/yonetim", "yapilacaklar": "ISLER.md", "yolHaritasi": "HEDEFLER.md", "yolHaritasiAdi": "Hedefler" },
     { "ad": "IT (altyapı)", "yol": "~/projects/altyapi", "yapilacaklar": "ISLER.md" }
   ]
 }

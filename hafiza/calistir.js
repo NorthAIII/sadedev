@@ -37,12 +37,15 @@ for (const p of ayar.projeler) {
   if (!fs.existsSync(repo)) continue;
   const gitDir = sh(`git -C '${repo}' rev-parse --path-format=absolute --git-common-dir`);
   if (!gitDir) continue;
-  const kisa = path.join(gitDir, 'hafiza', 'kisa');
+  // Deponun alt klasörüyse (ör. sirket/yonetim) kendi hafiza/<alt klasör>/'ü: aynı depodaki departmanlar karışmaz
+  const alt = path.relative(sh(`git -C '${repo}' rev-parse --show-toplevel`), repo);
+  const kok = path.join(gitDir, 'hafiza', alt);
+  const kisa = path.join(kok, 'kisa');
   if (haftaModu) {
     const bugun = new Date(Date.now() + 3 * 36e5), gecenPzt = new Date(bugun - ((bugun.getUTCDay() + 6) % 7 + 7) * 864e5);
     const pzt = gecenPzt.toISOString().slice(0, 10);
     if (!fs.existsSync(kisa)) continue;
-    const uzun = path.join(gitDir, 'hafiza', 'uzun'); fs.mkdirSync(uzun, { recursive: true });
+    const uzun = path.join(kok, 'uzun'); fs.mkdirSync(uzun, { recursive: true });
     const md = execFileSync('node', [path.join(__dirname, 'uzun-hafta.js'), kisa, repo, pzt], { encoding: 'utf8', maxBuffer: 1e8 });
     fs.writeFileSync(path.join(uzun, `${pzt}.md`), md);
     console.log(`${p.ad}: uzun ${pzt}`);
