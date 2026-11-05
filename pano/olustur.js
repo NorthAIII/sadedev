@@ -21,7 +21,10 @@ function isListesi(dosya) {
     if (h) { b = { ad: h[1].trim(), acik: [], yapildi: [] }; bolum.push(b); continue; }
     if (!b) continue;
     const m = l.match(/^\s*- \[( |x|X)\]\s+(.*)/);
-    if (m) (m[1] === ' ' ? b.acik : b.yapildi).push(m[2]);
+    if (m) { (m[1] === ' ' ? b.acik : b.yapildi).push(m[2]); continue; }
+    // İşaretsiz madde ("- **…**", "1. **…**"; Bunker OS): yalnız girintisiz satır, devamı sayılmaz
+    const d = l.match(/^(?:-|\d+\.)\s+(.*)/);
+    if (d) (/^bitti|^kapand/i.test(b.ad) ? b.yapildi : b.acik).push(d[1]);
   }
   return bolum;
 }

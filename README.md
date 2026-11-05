@@ -118,7 +118,7 @@ Her proje için tek kart: **yol haritası** (`docs/YOL-HARITASI.md`), **Şimdi**
 - Açmak: uygulamalar menüsünde **Çalışma Panosu** (yeniler ve açar) ya da `pano/ac.sh`.
 - Kendiliğinden yenilenir: 08:00, 08:30 ve 20:00.
 - Projeler `projeler.json`'da: `ad`, `yol`, varsa `konteyner` (VS Code konteynerindeki klasör adı) ve iş listesi dosyası.
-- Aynı veri `~/pano/pano.json` olarak da yazılır; `~/.gizli/bunker-pano.env` (BUNKER_PANO_URL, BUNKER_PANO_TOKEN) varsa `pano/gonder.sh` bunu Bunker OS'un Ops sayfasına gönderir (yoksa hiçbir şey yapmaz).
+- Aynı veri `~/pano/pano.json` olarak da yazılır; `~/.gizli/bunker-pano.env` (BUNKER_PANO_URL, BUNKER_PANO_TOKEN) varsa `pano/gonder.sh` bunu Bunker OS'un Ops sayfasına gönderir (yoksa hiçbir şey yapmaz). 5 Kasım'dan beri canlı, her gün 20:00'de. Uç: gövde en çok 256 KB (canlı nginx'in `/api/` sınırı; 5 Kasım'da 20 KB); aşacaksa Bunker'a haber verilir. Yanıtlar: 204 tamam, 401 token yanlış, 429 10 dakikada 10 yanlıştan sonra, 400 şema (yanıtta alan adı yazar). Token'ın asıl yeri Bitwarden "Bunker OS · OPS_PANO_TOKEN".
 - Yol haritası tablo (`| Ne | Neden | Hedef tarih | Durum |`) ya da madde listesi olabilir; panoda ilk 6 satır görünür.
 
 ---
@@ -161,7 +161,6 @@ gerekir. Deneme değerlendirmesi 12 Kasım 2026 (hız, token, kalite).
 
 ## Sonra
 
-- Pano verisini Bunker OS'a taşımak (Yönetim bekleme listesi).
 - Kullanılmayan eklenti ve bağlantıları proje bazında kapatmak: her adımda ~35 bin token sabit yük var; Claude
   Code'un yerleşik araç tanımları değiştirilmez, yalnız gereksiz eklenti/bağlantı kapatılır. Önce yeni bir pencerede
   `/context` ile ölçülür.
