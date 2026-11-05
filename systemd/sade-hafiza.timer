@@ -2,7 +2,7 @@
 Description=Kısa süreli hafıza, 12 saatte bir
 
 [Timer]
-OnCalendar=*-*-* 08:00,20:00
+OnCalendar=*-*-* 08,20:00
 Persistent=true
 
 [Install]
