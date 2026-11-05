@@ -1,0 +1,6 @@
+[Unit]
+Description=Sade düzen: canlı token alarmı (model çağırmaz)
+
+[Service]
+Type=oneshot
+ExecStart=%h/projects/sadedev/token/canli-alarm.sh

@@ -14,3 +14,14 @@ Konteynerde betik stdin'den verilir, dosya kopyalanmaz:
     docker exec -i alpfitv1_devcontainer-app-1 node - /home/node/.claude/projects/-workspaces-Alpfit-v1 2026-11-01T00:00:00Z 2026-11-03T00:00:00Z < oturum.js
 
 Bunker konteynerinin adı VS Code'un verdiği rastgele addır (`docker ps` → imajı `vsc-bunkeros-…`).
+
+## Canlı alarm
+
+Eşikler (`token/canli-alarm.js`) 22 Ekim – 5 Kasım 2026 kayıtlarından, ana makine ve çalışan konteynerler:
+
+- Proje başına saatlik toplam: ortanca 47M, %90'ı 112M, %99'u 383M. Kayan 60 dakikada 200M'yi aşan 3 gün (hepsi Alpfit, DevFlow).
+- Oturum başına kayan 6 saat: 500M'yi aşan 10 oturum (Alpfit run/plan-phase ve website.v3 audit-docs `e8995466`).
+- Cevap başına ana konuşmanın adımı (1.511 cevap): ortanca 5, %99'u 72; 100'ü aşan 8.
+
+Benzetim (15 dakikada bir, aynı dönem): 25 alarm, 5 Kasım'dan (sade düzen) önce 24'ü. audit-docs oturumu
+1 Kasım 07:00'de yakalanırdı (başlangıç 31 Ekim 14:24; gece yavaş koştu); 3 Kasım'da IT ölçümünde görülmüştü.

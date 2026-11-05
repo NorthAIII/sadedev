@@ -105,6 +105,17 @@ başına dünkü token, 7 günlük ortalama ve şu uyarılar:
 - tek bir oturum 12 saatten uzun sürdü ve son 24 saatte 0,5 milyardan fazla harcadı.
 
 Toplamın ~%97'si önbellekten okumadır; rapor ikisini ayrı da verir. Elle: `token/gunluk-rapor.sh --bildirimsiz`.
+
+**Canlı alarm** (15 dakikada bir, `token/canli-alarm.sh`): günlük rapor kaçağı ertesi sabah gösterir; bu, sürerken.
+Son 6 saatin kayıtlarını okur, model çağırmaz. Yeni alarm masaüstüne kalıcı bildirim olarak gelir ve
+`~/token-rapor/canli-alarm.log`'a yazılır. Üç kural:
+
+- bir proje son 1 saatte 200 milyonu aştı (3 saatte bir yinelenir);
+- tek oturum son 6 saatte 500 milyonu aştı, alt ajanlar dahil (günde bir yinelenir);
+- tek bir cevap 100 adımı aştı ve sürüyor: iş bitince yeni sohbet aç (yinelenmez).
+
+Eşikler 22 Ekim – 5 Kasım ölçümünden (`token/olcum/OKUBENI.md` → Canlı alarm). Elle: `token/canli-alarm.sh --bildirimsiz`.
+Geçmişte çalışsaydı ne derdi: `canli-topla.js`'i 340 saatle topla, `canli-alarm.js --benzet <baş> <bitiş>`.
 Ayrıntılı ölçüm betikleri `token/olcum/` (oturum başına, çağrı başına bağlam, efor kırılımı; `token/olcum/OKUBENI.md`).
 
 ---
