@@ -3,6 +3,7 @@
   "projeler": [
     { "ad": "Alpfit", "yol": "~/projects/Alpfit.v1", "konteyner": "Alpfit.v1", "yapilacaklar": "YAPILACAKLAR.md" },
     { "ad": "Alpfit web sitesi", "yol": "~/projects/Alpfitplus website.v3", "yapilacaklar": "YAPILACAKLAR.md" },
+    { "ad": "Alpfit satış", "yol": "~/projects/alpfit-plus-satis", "yapilacaklar": "YAPILACAKLAR.md" },
     { "ad": "Bunker OS", "yol": "~/projects/Bunker OS", "konteyner": "Bunker OS", "yapilacaklar": "YAPILACAKLAR.md" },
     { "ad": "IT (altyapı)", "yol": "~/projects/altyapi", "yapilacaklar": "ISLER.md" }
   ]
