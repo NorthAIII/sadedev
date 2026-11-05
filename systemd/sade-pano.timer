@@ -1,0 +1,9 @@
+[Unit]
+Description=Çalışma Panosu, gün içinde saat başı (08:00 ve 20:00'yi sade-hafiza, 08:30'u sade-token yapar)
+
+[Timer]
+OnCalendar=*-*-* 09..19,21..23:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target

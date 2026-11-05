@@ -1,0 +1,7 @@
+[Unit]
+Description=Sade düzen: Çalışma Panosu'nu gün içinde tazele (model çağırmaz)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/node %h/projects/sadedev/pano/olustur.js
+ExecStartPost=-%h/projects/sadedev/pano/gonder.sh

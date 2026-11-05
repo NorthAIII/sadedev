@@ -2,7 +2,7 @@
 # Zamanlayıcıları kullanıcı düzeyinde kurar (sudo gerekmez). Geri almak: kur.sh --kaldir
 set -e
 HEDEF="$HOME/.config/systemd/user"; BURA="$(cd "$(dirname "$0")" && pwd)"
-ZAMAN="sade-hafiza.timer sade-hafiza-hafta.timer sade-token.timer sade-canli.timer"
+ZAMAN="sade-hafiza.timer sade-hafiza-hafta.timer sade-token.timer sade-canli.timer sade-pano.timer"
 if [ "$1" = "--kaldir" ]; then
   systemctl --user disable --now $ZAMAN || true
   for f in "$BURA"/*.service "$BURA"/*.timer; do rm -f "$HEDEF/$(basename "$f")"; done
