@@ -44,8 +44,8 @@ for c in $(docker ps -a --filter status=exited --format '{{.Names}} {{.Image}}' 
 done
 
 DUN="$(date -d yesterday +%F)"
+node "$BURA/gecmis.js" < "$GECICI" >/dev/null # günlük geçmiş (~/token-rapor/gecmis.json), panoda son 5 ay; rapordaki 7g ortalama da buna bakar
 node "$BURA/gunluk-rapor.js" < "$GECICI" > "$CIKTI/$DUN.txt"
-node "$BURA/gecmis.js" < "$GECICI" >/dev/null # günlük geçmiş (~/token-rapor/gecmis.json), panoda son 5 ay
 cat "$CIKTI/$DUN.txt"
 [ "$1" = "--bildirimsiz" ] || notify-send -a "Token raporu" "$(head -1 "$CIKTI/$DUN.txt")" "$(sed -n '3,12p' "$CIKTI/$DUN.txt")" 2>/dev/null
 exit 0

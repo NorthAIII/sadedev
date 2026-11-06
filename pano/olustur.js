@@ -84,7 +84,7 @@ const kart = ayar.projeler.map((p) => {
   const iz = izle[p.ad];
   if (iz && iz.uyarilar.length) govde = `<h3 class="uyari">Uyarılar <span class="sayi">${iz.uyarilar.length}</span></h3>${liste(iz.uyarilar, 5)}` + govde;
   veri.projeler.push({ ad: p.ad, ...(p.yolHaritasiAdi ? { yolHaritasiAdi: p.yolHaritasiAdi } : {}), ...(iz ? { uyarilar: iz.uyarilar, ci: iz.ci } : {}), dal, sonCommit: son, sonOturum,
-    token: tok ? { dun: tok[1], ort7: tok[2], modeller: tok[3] || '' } : null,
+    token: tok ? { dun: tok[1], ort7: tok[2], modeller: tok[4] || '' } : null, // tok[3] ağırlıklı
     yolHaritasi: yh || [], bolumler: (bolum || []).map((b) => ({ ad: b.ad, acik: b.acik, bitti: b.yapildi })), sonYapilanlar: sonIs });
   return `<section class="kart"><header><h2>${kac(p.ad)}</h2><span class="dal">${kac(dal)}</span></header>
   <dl><dt>Son commit</dt><dd>${kac(son || '-')}</dd><dt>Son oturum</dt><dd>${kac(sonOturum || '-')}</dd>
