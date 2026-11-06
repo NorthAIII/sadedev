@@ -129,7 +129,7 @@ Ayrıntılı ölçüm betikleri `token/olcum/` (oturum başına, çağrı başı
 
 ## 4. Pano
 
-Her proje için tek kart: **yol haritası** (`docs/YOL-HARITASI.md`), **Şimdi**, **Sıradaki**, **Kıvanç'ı bekleyen**,
+Her proje için tek kart: **ilerleme** (son 7 günde biten, açık ve seni bekleyen iş sayısı; sayfanın başında bütün projelerin toplamı; yalnız sayfada, Bunker'a gitmez), **yol haritası** (`docs/YOL-HARITASI.md`), **Şimdi**, **Sıradaki**, **Kıvanç'ı bekleyen**,
 **son yapılanlar** (listenin "Bitti"si, yoksa son 7 günün ürün commit'leri), son commit, son oturum, dünkü token.
 "Projeden kopunca ne yaptık, ne yapacağız" sorusunun cevabı burası; model çağırmadan, dosyalardan üretilir.
 

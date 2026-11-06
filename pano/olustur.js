@@ -1,4 +1,5 @@
-// Pano: aktif projelerin iş listeleri, son commit, son oturum ve dünkü token tek sayfada. Model çağırmaz.
+// Pano: aktif projelerin iş listeleri, ilerleme, son commit, son oturum ve dünkü token tek sayfada. Model çağırmaz.
+// İlerleme yalnız sayfada; pano.json'a (Bunker'a giden) girmez, Bunker alanı kabul edince eklenir.
 // Kullanım: node pano/olustur.js  → ~/pano/index.html (tarayıcıda aç: file:///home/<kullanıcı>/pano/index.html)
 const fs = require('fs'), os = require('os'), path = require('path'), { execSync } = require('child_process');
 const KOK = path.dirname(__dirname);
@@ -48,6 +49,29 @@ function yolHaritasi(dosya) {
   }
   return madde;
 }
+// İlerleme: son 7 günde biten (Bitti/Kapandı'daki tarihli satırlar: "2026-11-05 · …" ya da "05.11 — …"), açık ve Kıvanç'ı bekleyen
+// iş sayısı. Bekleyen: "Kıvanç'ı bekleyen" bölümü; yoksa (IT ve Yönetim'in ISLER.md'si) satırında "· Kıvanç" geçen açık işler
+const tarihi = (x) => {
+  let m = x.match(/^(?:\*\*)?(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return Date.parse(`${m[1]}-${m[2]}-${m[3]}T12:00:00+03:00`);
+  m = x.match(/^(?:\*\*)?(\d{2})\.(\d{2})(?:\.(\d{4}))?\b/);
+  if (!m) return null;
+  const t = Date.parse(`${m[3] || new Date().getFullYear()}-${m[2]}-${m[1]}T12:00:00+03:00`);
+  return !m[3] && t > Date.now() + 864e5 ? t - 365 * 864e5 : t;
+};
+function ilerleme(bolum) {
+  if (!bolum) return null;
+  const bitti = bolum.filter((b) => /^bitti|^kapand/i.test(b.ad)), acik = bolum.filter((b) => !/^bitti|^kapand/i.test(b.ad));
+  const kb = acik.filter((b) => /kıvanç/i.test(b.ad));
+  return {
+    hafta: bitti.flatMap((b) => b.yapildi).filter((x) => { const t = tarihi(x); return t && Date.now() - t < 7 * 864e5; }).length,
+    acik: acik.filter((b) => !kb.includes(b)).reduce((a, b) => a + b.acik.length, 0),
+    bekleyen: kb.length ? kb.reduce((a, b) => a + b.acik.length, 0) : acik.flatMap((b) => b.acik).filter((x) => /· Kıvanç(\s|'|$)/.test(x)).length,
+  };
+}
+const ilerlemeMetni = (i) => `bu hafta ${i.hafta} iş bitti · ${i.acik} açık · seni bekleyen ${i.bekleyen}`;
+const toplamIlerleme = { hafta: 0, acik: 0, bekleyen: 0 };
+
 const liste = (b, n) => `<ul>${b.slice(0, n).map((x) => `<li>${md(x.slice(0, 200))}</li>`).join('')}${b.length > n ? `<li class="soluk">… +${b.length - n}</li>` : ''}</ul>`;
 const bag = (f, ad) => fs.existsSync(f) ? ` <a href="file://${encodeURI(f)}">${ad}</a>` : '';
 
@@ -81,14 +105,16 @@ const kart = ayar.projeler.map((p) => {
   const sonIs = bitti && bitti.yapildi.length ? bitti.yapildi.slice(-5).reverse()
     : sh(`git -C '${yol}' log --since='7 days ago' --no-merges --format='%ad %s' --date=format:'%d.%m'`).split('\n').filter((l) => /^\S+ (feat|fix|perf|refactor)/.test(l)).slice(0, 5).map((l) => l.length > 120 ? l.slice(0, 117) + '…' : l);
   if (sonIs.length) govde += `<h3>Son yapılanlar</h3>${liste(sonIs, 5)}`;
+  const il = ilerleme(bolum);
+  if (il) for (const k in toplamIlerleme) toplamIlerleme[k] += il[k];
   const iz = izle[p.ad];
   if (iz && iz.uyarilar.length) govde = `<h3 class="uyari">Uyarılar <span class="sayi">${iz.uyarilar.length}</span></h3>${liste(iz.uyarilar, 5)}` + govde;
   veri.projeler.push({ ad: p.ad, ...(p.yolHaritasiAdi ? { yolHaritasiAdi: p.yolHaritasiAdi } : {}), ...(iz ? { uyarilar: iz.uyarilar, ci: iz.ci } : {}), dal, sonCommit: son, sonOturum,
     token: tok ? { dun: tok[1], ort7: tok[2], modeller: tok[4] || '' } : null, // tok[3] ağırlıklı
     yolHaritasi: yh || [], bolumler: (bolum || []).map((b) => ({ ad: b.ad, acik: b.acik, bitti: b.yapildi })), sonYapilanlar: sonIs });
   return `<section class="kart"><header><h2>${kac(p.ad)}</h2><span class="dal">${kac(dal)}</span></header>
-  <dl><dt>Son commit</dt><dd>${kac(son || '-')}</dd><dt>Son oturum</dt><dd>${kac(sonOturum || '-')}</dd>
-  ${iz && iz.ci.durum !== '-' ? `<dt>CI</dt><dd>${kac(iz.ci.durum)}</dd>` : ''}<dt>Dün token</dt><dd>${tok ? `${kac(tok[1])} milyar · 7 gün ort. ${kac(tok[2])}${tok[3] ? ` · ${kac(tok[3])}` : ''}` : '-'}</dd></dl>${govde}</section>`;
+  <dl>${il ? `<dt>İlerleme</dt><dd>${ilerlemeMetni(il)}</dd>` : ''}<dt>Son commit</dt><dd>${kac(son || '-')}</dd><dt>Son oturum</dt><dd>${kac(sonOturum || '-')}</dd>
+  ${iz && iz.ci.durum !== '-' ? `<dt>CI</dt><dd>${kac(iz.ci.durum)}</dd>` : ''}<dt>Dün token</dt><dd>${tok ? `${kac(tok[1])} milyar · 7 gün ort. ${kac(tok[2])} · ağırlıklı ${kac(tok[3] || '-')}${tok[4] ? ` · ${kac(tok[4])}` : ''}` : '-'}</dd></dl>${govde}</section>`;
 }).join('\n');
 
 // Günlük token geçmişi (token/gecmis.js yazar): son 155 gün, milyar; proje adları projeler.json'dakiler
@@ -122,7 +148,7 @@ dt{color:var(--soluk)}dd{margin:0;overflow-wrap:anywhere}h3{font-size:14px;margi
 ul{margin:0;padding-left:18px}a{color:var(--vurgu);font-size:12px;font-weight:normal;margin-left:6px}li{margin:2px 0;overflow-wrap:anywhere}code{font-size:12px}.soluk{color:var(--soluk)}
 details{margin-top:20px}pre{background:var(--kart);border:1px solid var(--cizgi);border-radius:8px;padding:12px;overflow-x:auto;font-size:12px}
 </style></head><body>
-<div class="ust"><div><h1>Çalışma Panosu</h1><div class="ozet">${kac(ozet)}</div>${uyari ? `<div class="uyari">${kac(uyari)}</div>` : ''}
+<div class="ust"><div><h1>Çalışma Panosu</h1><div class="ozet">Bütün projeler: ${ilerlemeMetni(toplamIlerleme)}</div><div class="ozet">${kac(ozet)}</div>${uyari ? `<div class="uyari">${kac(uyari)}</div>` : ''}
 ${alarmlar.length ? `<h3 class="uyari">Canlı alarmlar, son 24 saat <span class="sayi">${alarmlar.length}</span>${bag(alarmDosya, 'kayıt')}</h3><ul>${alarmlar.slice(0, 10).map((x) => `<li>${kac(x)}</li>`).join('')}${alarmlar.length > 10 ? `<li class="soluk">… +${alarmlar.length - 10}</li>` : ''}</ul>` : '<div class="soluk">Son 24 saatte canlı alarm yok</div>'}</div>
 <div class="soluk">Güncellendi: ${new Date(Date.now() + 3 * 36e5).toISOString().slice(0, 16).replace('T', ' ')}</div></div>
 <main>${kart}</main>
