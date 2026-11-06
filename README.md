@@ -81,7 +81,7 @@ sonra DevFlow'u arşive taşır (silmez) ve listenin ilk işiyle devam eder. Ön
 
 | | Ne | Ne zaman | Nerede |
 |---|---|---|---|
-| Kısa süreli | Her oturum özetsiz: başlık, tarih, dal, model, token, Kıvanç'ın bütün istekleri, Claude'un yazdığı metinler, o aralıktaki commit'ler ve dosyaları. Düşünme ve araç çıktıları alınmaz. | 08:00 ve 20:00 | `<git-common-dir>/hafiza/kisa/` (`INDEX.md` + `<ay>/<oturum>.md`) |
+| Kısa süreli | Her oturum özetsiz: başlık, tarih, dal, model, token, bağlam (oturum başındaki CLAUDE.md'nin boyutu ve adım başına ortalama token: "kısalınca düştü mü"), Kıvanç'ın bütün istekleri, Claude'un yazdığı metinler, o aralıktaki commit'ler ve dosyaları. Düşünme ve araç çıktıları alınmaz. | 08:00 ve 20:00 | `<git-common-dir>/hafiza/kisa/` (`INDEX.md` + `<ay>/<oturum>.md`) |
 | Uzun süreli | Haftanın dizini: Kıvanç'ın kural, düzeltme ve karar cümleleri olduğu gibi, commit'ler türüne göre, geri alınanlar, en çok değişen dosyalar, oturumlar ve tokenları | Pazartesi 07:30 | `<git-common-dir>/hafiza/uzun/<pazartesi>.md` |
 
 - `<git-common-dir>` çoğu projede `.git/`. Orası commit'lenmez, GitHub'a gitmez, geliştirme konteynerinden de görünür.
@@ -101,12 +101,14 @@ Elle: `node hafiza/calistir.js` (kısa) · `node hafiza/calistir.js --hafta` (ge
 ## 3. Token raporu
 
 Her sabah 08:30 `~/token-rapor/<dün>.txt` yazılır, özeti masaüstüne bildirim olarak gelir. İçinde proje ve model
-başına dünkü token, 7 günlük ortalama ve şu uyarılar:
+başına dünkü token, 7 günlük ortalama, ağırlıklı token ve şu uyarılar:
 
-- bir proje kendi 7 günlük ortalamasının iki katını aştı (ve 0,3 milyardan fazla);
+- bir proje kendi 7 günlük ortalamasının iki katını aştı (ve 0,3 milyardan fazla). Ortalama `~/token-rapor/gecmis.json`'a
+  da bakar, çünkü konteyner yeniden kurulunca eski oturum kayıtları gider. Önceki 7 günün 3'ünden azında veri varsa
+  ortalama "-" yazılır, uyarı verilmez;
 - tek bir oturum 12 saatten uzun sürdü ve son 24 saatte 0,5 milyardan fazla harcadı.
 
-Toplamın ~%97'si önbellekten okumadır; rapor ikisini ayrı da verir. Elle: `token/gunluk-rapor.sh --bildirimsiz`.
+Toplamın ~%97'si önbellekten okumadır; rapor ikisini ayrı da verir. **Ağırlıklı** sütunda önbellekten okunan token onda bir sayılır (öbürleri bir); harcamanın gerçek ağırlığına daha yakındır. Uyarılar ağırlıksız toplamla kalır. Kayıtları silinmiş projede "?". Elle: `token/gunluk-rapor.sh --bildirimsiz`.
 
 **Canlı alarm** (15 dakikada bir, `token/canli-alarm.sh`): günlük rapor kaçağı ertesi sabah gösterir; bu, sürerken.
 Son 6 saatin kayıtlarını okur, model çağırmaz. Yeni alarm masaüstüne kalıcı bildirim olarak gelir ve

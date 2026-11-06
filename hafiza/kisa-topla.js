@@ -1,5 +1,5 @@
 // Kısa süreli hafıza: her Claude oturumunu özetlemeden, model çağırmadan bir Markdown kaydına çevirir.
-// Kayıtta: başlık, tarih, dal, model ve token, kullanıcının bütün istekleri, Claude'un yazdığı metinler
+// Kayıtta: başlık, tarih, dal, model ve token, bağlam (CLAUDE.md'nin boyutu ve adım başına token), kullanıcının bütün istekleri, Claude'un yazdığı metinler
 // (düşünme ve araç çıktıları hariç), oturum sırasında atılan commit'ler. Sır ve kişisel veri maskelenir,
 // <private>…</private> arası hiç yazılmaz.
 // Kullanım: node kisa-topla.js <transkript-klasoru> <repo-yolu|-> <cikti-klasoru> [kac-gun=2]
@@ -25,7 +25,7 @@ const temizle = (s) => s.replace(/<(system-reminder|ide_selection|ide_opened_fil
 const saat = (ts) => new Date(Date.parse(ts) + 3 * 36e5).toISOString().replace('T', ' ').slice(0, 16);
 
 function oturumOku(f) {
-  const s = { id: path.basename(f, '.jsonl'), baslik: '', bas: '', son: '', dal: '', model: {}, token: 0, olay: [] };
+  const s = { id: path.basename(f, '.jsonl'), baslik: '', bas: '', son: '', dal: '', model: {}, token: 0, anaToken: 0, adim: 0, olay: [] };
   const goruldu = new Set();
   const isle = (o, ana) => {
     if (o.type === 'ai-title' && o.aiTitle) s.baslik = o.aiTitle;
@@ -38,7 +38,9 @@ function oturumOku(f) {
     if (o.type === 'assistant' && m.id && !goruldu.has(m.id)) {
       goruldu.add(m.id);
       const u = m.usage || {};
-      s.token += (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.output_tokens || 0);
+      const t = (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.output_tokens || 0);
+      s.token += t;
+      if (ana) { s.anaToken += t; s.adim++; }
       const md = (m.model || '').replace('claude-', ''); if (md && md !== '<synthetic>') s.model[md] = 1;
     }
     if (!ana) return;
@@ -71,6 +73,18 @@ function commitler(bas, son) {
   } catch { return []; }
 }
 
+// CLAUDE.md'nin parmak izi: oturum başladığında commit'li hâlinin boyutu ve onu son değiştiren commit ("kısalınca token düştü mü")
+function claudeMd(bas) {
+  if (!repo || repo === '-' || !bas) return '-';
+  try {
+    const g = (a) => execFileSync('git', ['-C', repo, ...a], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const h = g(['log', '-1', `--before=${bas}`, '--format=%h %ad', '--date=format:%d.%m', '--', 'CLAUDE.md']);
+    if (!h) return 'yok';
+    const [kim, tarih] = h.split(' ');
+    return `CLAUDE.md ${(Number(g(['cat-file', '-s', `${kim}:./CLAUDE.md`])) / 1024).toFixed(1)} KB (${kim}, ${tarih})`;
+  } catch { return '?'; }
+}
+
 const slug = (t) => (t || 'oturum').toLocaleLowerCase('tr').replace(/[^a-z0-9çğıöşü]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
 fs.mkdirSync(cikti, { recursive: true });
 for (const e of fs.readdirSync(kayitDir)) {
@@ -86,6 +100,7 @@ for (const e of fs.readdirSync(kayitDir)) {
     `# ${maskele(baslik)}`, '',
     `- Tarih: ${saat(s.bas)} → ${saat(s.son)}`,
     `- Oturum: ${s.id} · dal: ${s.dal || '-'} · model: ${Object.keys(s.model).join(', ') || '-'} · token: ${(s.token / 1e6).toFixed(1)}M (alt ajanlar dahil)`,
+    `- Bağlam: ${claudeMd(s.bas)} · adım başına ort. ${s.adim ? Math.round(s.anaToken / s.adim / 1e3) : '-'} bin token (ana oturum, ${s.adim} adım)`,
     `- Bu aralıktaki commit'ler: ${cm.length} (paralel oturumlarınkiler de olabilir)`, '',
     '## Konuşma', '',
     ...s.olay.map((x) => `### ${saat(x.ts)} · ${x.kim}\n\n${maskele(x.metin)}\n`),
