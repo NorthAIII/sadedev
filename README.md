@@ -36,6 +36,8 @@ Oturum başında "geçmişten şunları bil" diye bilgi yükleyen her sistem mal
   işi yapar, commit eder, listeyi günceller.
 - Büyük bir iş (birkaç günlük) istiyorsan önce plan iste: oturum 5–10 maddelik plan sunar, onaylarsan maddeler
   "Sıradaki"ye girer.
+- Yeni ve büyük bir **özellikse** (ne yapacağı henüz net değil) plandan önce `istemler/prd.md`'yi yapıştır: oturum sana
+  soru sorar, tek sayfalık `docs/prd/<ad>.md` yazar ve işleri "bitti sayılır" maddeleriyle önerir. Belge kendiliğinden okunmaz.
 - Sırayı sen belirlersin. Oturum yolda yeni bir iş bulursa listeye yazar ve sana söyler, araya sokmaz.
 - Her işte yeni bir sohbet aç. Uzayan sohbet her adımda daha çok okur.
 
